@@ -13,7 +13,6 @@ Time-based One-Time Password (TOTP) generator yang mengimplementasikan standar *
 - [Overview](#-overview)
 - [Fitur Utama](#-fitur-utama)
 - [Teknologi](#-teknologi)
-- [Deployment](#-deployment)
 - [Cara Penggunaan](#-cara-penggunaan)
 - [Konfigurasi Keamanan](#-konfigurasi-keamanan)
 - [Implementasi TOTP](#-implementasi-totp)
@@ -68,51 +67,12 @@ TOTP Security Generator adalah implementasi **Time-based One-Time Password** yan
 - **Cryptography**: Web Crypto API (SubtleCrypto)
 - **Standards**: RFC 6238 (TOTP), RFC 4226 (HOTP), RFC 3548 (Base32)
 
-## 🌐 Deployment
-
-### Release-Based Deployment
-Aplikasi ini menggunakan **release-based deployment** untuk kontrol yang lebih baik:
-
-1. **Automatic Production Deploy**: Hanya saat create release tag (v1.0.0, v1.1.0, etc.)
-2. **Development Builds**: Build verification untuk setiap push dan PR
-3. **Cloudflare Pages**: Static hosting dengan global CDN dan SSL otomatis
-
-### Creating a Release
-
-#### Quick Release
-```bash
-# Otomatis create release dan deploy
-./release.sh v1.0.0
-```
-
-#### Manual Release  
-```bash
-npm version 1.0.0 --no-git-tag-version
-git add package.json
-git commit -m "chore: bump version to v1.0.0"
-git tag -a v1.0.0 -m "Release v1.0.0"
-git push origin main && git push origin v1.0.0
-```
-
-### Deploy Options
-
-#### Option 1: GitHub Actions (Current Setup)
-- ✅ Release tag triggers automatic deployment
-- ✅ Full CI/CD pipeline dengan type checking
-- ✅ Production deployment hanya untuk tagged releases
-
-#### Option 2: Direct Git Integration
-- Connect repository ke Cloudflare Pages Dashboard
-- Auto-deploy setiap push (tidak direkomendasikan untuk production)
-
-📋 **Deployment Guide**: Lihat `CI-CD-SETUP.md` untuk setup detail dan `release.sh` untuk release otomatis.
-
 ## 🚀 Cara Penggunaan
 
 ### 1. Setup Development
 ```bash
 # Clone atau download repository
-git clone <repository-url>
+git clone https://github.com/ruriazz/TOTP.git
 cd totp
 
 # Install dependencies
