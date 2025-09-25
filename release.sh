@@ -37,8 +37,8 @@ echo -e "${YELLOW}📋 Pre-release checks...${NC}"
 
 # Check if we're on the right branch
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-if [ "$CURRENT_BRANCH" != "master" ] && [ "$CURRENT_BRANCH" != "main" ]; then
-    echo -e "${YELLOW}⚠️  Warning: You're on branch '$CURRENT_BRANCH', not 'master' or 'main'${NC}"
+if [ "$CURRENT_BRANCH" != "master" ]; then
+    echo -e "${YELLOW}⚠️  Warning: You're on branch '$CURRENT_BRANCH', not 'master'${NC}"
     read -p "Continue anyway? (y/N): " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
