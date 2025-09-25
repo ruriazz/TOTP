@@ -86,7 +86,7 @@ git tag -a $VERSION -m "Release $VERSION
 
 ## Deployment
 This release will be automatically deployed to:
-https://totp-generator.pages.dev
+https://totp.dev.ruriazz.com
 
 Generated on: $(date -u)
 "
@@ -95,12 +95,15 @@ echo -e "${YELLOW}📤 Pushing to remote...${NC}"
 git push origin $CURRENT_BRANCH
 git push origin $VERSION
 
-echo -e "${GREEN}🎉 Release $VERSION created successfully!${NC}"
+echo -e "${GREEN}🎉 Tag $VERSION created successfully!${NC}"
 echo ""
-echo -e "${BLUE}📋 What happens next:${NC}"
-echo "1. GitHub Actions will automatically build and deploy to Cloudflare Pages"
-echo "2. Check the 'Actions' tab in GitHub for deployment progress"
-echo "3. Your app will be live at: https://totp-generator.pages.dev"
+echo -e "${BLUE}📋 Create GitHub Release:${NC}"
+echo "1. Go to: https://github.com/ruriazz/TOTP/releases/new"
+echo "2. Choose tag: $VERSION"
+echo "3. Generate release notes or write custom notes"
+echo "4. Click 'Publish release' to trigger deployment"
+echo ""
+echo -e "${YELLOW}⚠️  IMPORTANT: You must PUBLISH the release on GitHub to trigger deployment!${NC}"
 echo ""
 echo -e "${BLUE}🔗 Useful links:${NC}"
 echo "- GitHub Releases: https://github.com/ruriazz/TOTP/releases"
