@@ -49,13 +49,13 @@ jobs:
           projectName: 'totp'
           directory: 'dist'
           # Optional: git info for better deployment tracking
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          gitHubToken: ${{ secrets.GH_TOKEN }}
 
       - name: Create deployment summary
         run: |
           echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "- **Version**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Project**: totp-generator" >> $GITHUB_STEP_SUMMARY
+          echo "- **Project**: totp" >> $GITHUB_STEP_SUMMARY
           echo "- **Environment**: Production" >> $GITHUB_STEP_SUMMARY
           echo "- **Deployed at**: $(date -u)" >> $GITHUB_STEP_SUMMARY
-          echo "- **URL**: https://totp-generator.pages.dev" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL**: https://totp.dev.ruriazz.com" >> $GITHUB_STEP_SUMMARY
