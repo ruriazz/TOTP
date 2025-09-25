@@ -2,16 +2,18 @@
 
 ![TOTP](https://img.shields.io/badge/TOTP-RFC%206238-blue)
 ![Security](https://img.shields.io/badge/Security-HMAC%20Based-green)
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?logo=javascript&logoColor=black)
+![Svelte](https://img.shields.io/badge/Svelte-FF3E00?logo=svelte&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)
 
-Time-based One-Time Password (TOTP) generator yang mengimplementasikan standar **RFC 6238** dengan interface web yang user-friendly dan fitur keamanan.
+Time-based One-Time Password (TOTP) generator yang mengimplementasikan standar **RFC 6238** dengan modern web framework dan fitur keamanan lengkap.
 
 ## 📋 Daftar Isi
 
 - [Overview](#-overview)
 - [Fitur Utama](#-fitur-utama)
 - [Teknologi](#-teknologi)
+- [Deployment](#-deployment)
 - [Cara Penggunaan](#-cara-penggunaan)
 - [Konfigurasi Keamanan](#-konfigurasi-keamanan)
 - [Implementasi TOTP](#-implementasi-totp)
@@ -22,13 +24,13 @@ Time-based One-Time Password (TOTP) generator yang mengimplementasikan standar *
 
 ## 🎯 Overview
 
-TOTP Security Generator adalah implementasi **Time-based One-Time Password** yang mengikuti standar internasional RFC 6238. Aplikasi ini menyediakan:
+TOTP Security Generator adalah implementasi **Time-based One-Time Password** yang mengikuti standar internasional RFC 6238. Aplikasi ini dibangun dengan **Svelte 5** dan **TypeScript** untuk performa optimal dan type safety. Menyediakan:
 
 - **Generator secret key** dengan multiple level keamanan
 - **TOTP generation** real-time dengan countdown timer
 - **OTP verification** dengan clock skew tolerance
 - **Multiple hash algorithms** (SHA-1, SHA-256, SHA-512)
-- **Responsive UI** dengan modern design
+- **Modern component architecture** dengan reactive state management
 
 ## ✨ Fitur Utama
 
@@ -50,41 +52,115 @@ TOTP Security Generator adalah implementasi **Time-based One-Time Password** yan
 - **No data persistence** - semua data di memory browser
 
 ### 📱 User Interface
+- **Component-based architecture** dengan Svelte 5
+- **Reactive state management** dengan Svelte stores
 - **Real-time countdown** dengan progress bar visual
 - **Responsive design** untuk desktop dan mobile
 - **Modern gradient UI** dengan smooth animations
-- **Accessibility friendly** dengan proper labeling
+- **Type-safe development** dengan TypeScript
 
 ## 🔧 Teknologi
 
-- **Frontend**: HTML5, CSS3, Vanilla JavaScript (ES6+)
+- **Frontend Framework**: Svelte 5 dengan SvelteKit architecture
+- **Language**: TypeScript untuk type safety
+- **Build Tool**: Vite dengan Rolldown bundler
+- **State Management**: Svelte stores (reactive)
 - **Cryptography**: Web Crypto API (SubtleCrypto)
 - **Standards**: RFC 6238 (TOTP), RFC 4226 (HOTP), RFC 3548 (Base32)
-- **Security**: HMAC-SHA1/256/512, Cryptographically secure random
+
+## 🌐 Deployment
+
+### Release-Based Deployment
+Aplikasi ini menggunakan **release-based deployment** untuk kontrol yang lebih baik:
+
+1. **Automatic Production Deploy**: Hanya saat create release tag (v1.0.0, v1.1.0, etc.)
+2. **Development Builds**: Build verification untuk setiap push dan PR
+3. **Cloudflare Pages**: Static hosting dengan global CDN dan SSL otomatis
+
+### Creating a Release
+
+#### Quick Release
+```bash
+# Otomatis create release dan deploy
+./release.sh v1.0.0
+```
+
+#### Manual Release  
+```bash
+npm version 1.0.0 --no-git-tag-version
+git add package.json
+git commit -m "chore: bump version to v1.0.0"
+git tag -a v1.0.0 -m "Release v1.0.0"
+git push origin main && git push origin v1.0.0
+```
+
+### Deploy Options
+
+#### Option 1: GitHub Actions (Current Setup)
+- ✅ Release tag triggers automatic deployment
+- ✅ Full CI/CD pipeline dengan type checking
+- ✅ Production deployment hanya untuk tagged releases
+
+#### Option 2: Direct Git Integration
+- Connect repository ke Cloudflare Pages Dashboard
+- Auto-deploy setiap push (tidak direkomendasikan untuk production)
+
+📋 **Deployment Guide**: Lihat `CI-CD-SETUP.md` untuk setup detail dan `release.sh` untuk release otomatis.
 
 ## 🚀 Cara Penggunaan
 
-### 1. Setup
+### 1. Setup Development
 ```bash
 # Clone atau download repository
 git clone <repository-url>
+cd totp
 
-# Buka index.html di browser
-open index.html
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build untuk production
+npm run build
+
+# Preview production build
+npm run preview
 ```
 
-### 2. Generate Secret Key
+### 2. Project Structure
+```
+totp/
+├── src/
+│   ├── components/          # Svelte components
+│   │   ├── KeyGenerator.svelte
+│   │   ├── TOTPConfig.svelte
+│   │   ├── TOTPDisplay.svelte
+│   │   └── TOTPVerifier.svelte
+│   ├── stores/             # State management
+│   │   └── totp.ts
+│   ├── types/              # TypeScript definitions
+│   │   └── types.ts
+│   ├── utils/              # Utility functions
+│   │   └── totp.ts
+│   ├── App.svelte          # Main application
+│   └── main.ts             # Entry point
+├── vite.config.ts          # Vite configuration
+└── package.json
+```
+
+### 3. Generate Secret Key
 1. Pilih **key length** (160/256/512-bit)
 2. Klik **"Generate New Secret Key"**
 3. Secret key dalam format Base32 akan muncul
 
-### 3. Konfigurasi TOTP
+### 4. Konfigurasi TOTP
 - **Time Step**: Interval waktu OTP (default: 30 detik)
 - **OTP Length**: Panjang kode OTP (default: 6 digit)
 - **Hash Algorithm**: Algoritma hash (default: SHA-1)
 - **Clock Skew**: Toleransi sinkronisasi waktu
 
-### 4. Generate & Verify OTP
+### 5. Generate & Verify OTP
 1. Klik **"Start TOTP Generation"**
 2. OTP akan ditampilkan dengan countdown timer
 3. Masukkan OTP di field verification untuk testing
@@ -123,6 +199,23 @@ const algorithms = {
 - **Relaxed Mode (2)**: OTP valid di window saat ini + 2 window sebelumnya
 
 ## 🔬 Implementasi TOTP
+
+### Architecture Overview
+```typescript
+// 1. State Management (Svelte Stores)
+export const totpConfig = writable<TOTPConfig>({
+  timeStep: 30,
+  digits: 6,
+  algorithm: 'SHA-1',
+  clockSkew: 1
+});
+
+// 2. Component Structure
+KeyGenerator     → Generate secret keys
+TOTPConfig      → Configure TOTP parameters  
+TOTPDisplay     → Show OTP with countdown
+TOTPVerifier    → Verify OTP codes
+```
 
 ### Core Algorithm Flow
 ```javascript
@@ -185,12 +278,21 @@ const otp = binary % Math.pow(10, digits);
 ## 🎯 Best Practices
 
 ### Production Implementation
-```javascript
-// ✅ Good: Use secure key storage
-const secretKey = await getFromSecureStorage('totp-secret');
+```typescript
+// ✅ Good: Use Svelte stores for state management
+import { totpConfig, secretKey } from '$stores/totp';
+import { generateSecretKey } from '$utils/totp';
 
-// ❌ Bad: Hardcode secret keys
-const secretKey = 'JBSWY3DPEHPK3PXP';
+// ✅ Good: Type-safe configuration
+const config: TOTPConfig = {
+  timeStep: 30,
+  digits: 6,
+  algorithm: 'SHA-1',
+  clockSkew: 1
+};
+
+// ❌ Bad: Direct DOM manipulation
+document.getElementById('secret').value = 'JBSWY3DPEHPK3PXP';
 ```
 
 ### Security Recommendations
@@ -200,27 +302,33 @@ const secretKey = 'JBSWY3DPEHPK3PXP';
 - 📱 **Backup Codes**: Sediakan backup authentication methods
 
 ### Development Guidelines
-- ✅ Use Web Crypto API untuk random generation
-- ✅ Implement proper error handling
-- ✅ Validate user inputs
+- ✅ Use TypeScript untuk type safety
+- ✅ Implement Svelte reactive statements
+- ✅ Use stores untuk state management
+- ✅ Follow component composition patterns
+- ✅ Use proper error handling
+- ✅ Validate user inputs with TypeScript types
 - ✅ Use HTTPS in production
 - ❌ Jangan simpan secret key di localStorage
 - ❌ Jangan log sensitive data
+- ❌ Jangan bypass TypeScript type checking
 
 ## 🌐 Browser Support
 
-| Browser | Version | Web Crypto API | Support |
-|---------|---------|----------------|---------|
-| Chrome  | 37+     | ✅             | ✅      |
-| Firefox | 34+     | ✅             | ✅      |
-| Safari  | 7+      | ✅             | ✅      |
-| Edge    | 12+     | ✅             | ✅      |
+| Browser | Version | Web Crypto API | Svelte Support | Support |
+|---------|---------|----------------|----------------|---------|
+| Chrome  | 37+     | ✅             | ✅             | ✅      |
+| Firefox | 34+     | ✅             | ✅             | ✅      |
+| Safari  | 7+      | ✅             | ✅             | ✅      |
+| Edge    | 12+     | ✅             | ✅             | ✅      |
 
-### Required APIs
+### Required APIs & Features
 - `crypto.getRandomValues()` - Secure random generation
 - `crypto.subtle.importKey()` - Key import
 - `crypto.subtle.sign()` - HMAC computation
 - `DataView` - Binary data manipulation
+- ES Modules support - Modern JavaScript features
+- TypeScript support (development) - Type checking
 
 ## 🚨 Security Notice
 
@@ -232,9 +340,11 @@ const secretKey = 'JBSWY3DPEHPK3PXP';
 5. **Rate Limiting**: Implementasi rate limiting untuk mencegah brute force
 
 ### Development vs Production
-- **Development**: File ini cocok untuk testing dan development
-- **Production**: Memerlukan backend implementation dengan proper secret management
-- **Demo Only**: Current implementation adalah proof-of-concept
+- **Development**: Menggunakan Vite dev server dengan HMR
+- **Production**: Build dengan Vite dan optimasi bundle
+- **TypeScript**: Type checking dalam development dan build
+- **Components**: Modular Svelte components untuk maintainability
+- **Demo Ready**: Siap untuk demo dan development testing
 
 ## 📄 References
 
@@ -242,10 +352,13 @@ const secretKey = 'JBSWY3DPEHPK3PXP';
 - [RFC 4226 - HOTP](https://tools.ietf.org/rfc/rfc4226.txt)
 - [RFC 3548 - Base32](https://tools.ietf.org/rfc/rfc3548.txt)
 - [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
+- [Svelte Documentation](https://svelte.dev/docs)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+- [Vite Guide](https://vitejs.dev/guide/)
 
 ---
 
-**⚡ Quick Start**: Buka `index.html` di browser modern, generate secret key, dan mulai generate TOTP!
+**⚡ Quick Start**: `npm install && npm run dev`, kemudian buka browser di `http://localhost:5173`
 
 **🔒 Security First**: Selalu ikuti security best practices untuk implementasi production.
 
