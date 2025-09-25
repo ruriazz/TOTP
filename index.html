@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOTP Security Implementation (RFC 6238)</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #667eea;
+        }
+
+        .section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .section h3::before {
+            content: "🔐";
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #34495e;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .otp-display {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(17, 153, 142, 0.3);
+        }
+
+        .otp-code {
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            margin-bottom: 10px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .otp-timer {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: white;
+            transition: width 1s linear;
+            border-radius: 3px;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .info-box h4 {
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        .security-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: #8b4513;
+        }
+
+        .feature-card h5 {
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .warning {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            border: 1px solid #ff6b6b;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .otp-code {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔒 TOTP Security Generator</h1>
+            <p>Time-based One-Time Password - RFC 6238 Implementation</p>
+        </div>
+
+        <div class="content">
+            <!-- Key Generator Section -->
+            <div class="section">
+                <h3>Secret Key Generator</h3>
+                <div class="input-group">
+                    <label for="keyLength">Key Length (Recommended: 160-bit minimum)</label>
+                    <select id="keyLength">
+                        <option value="160">160-bit (Standard)</option>
+                        <option value="256">256-bit (High Security)</option>
+                        <option value="512">512-bit (Maximum Security)</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="generateSecretKey()">Generate New Secret Key</button>
+                <div class="input-group">
+                    <label for="secretKey">Secret Key (Base32)</label>
+                    <input type="text" id="secretKey" placeholder="Secret key will appear here..." readonly>
+                </div>
+            </div>
+
+            <!-- TOTP Configuration -->
+            <div class="section">
+                <h3>TOTP Configuration</h3>
+                <div class="input-group">
+                    <label for="timeStep">Time Step (seconds) - Standard: 30s</label>
+                    <select id="timeStep">
+                        <option value="30" selected>30 seconds (Standard)</option>
+                        <option value="60">60 seconds</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="digits">OTP Length - Standard: 6 digits</label>
+                    <select id="digits">
+                        <option value="6" selected>6 digits (Standard)</option>
+                        <option value="8">8 digits (High Security)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="algorithm">Hash Algorithm</label>
+                    <select id="algorithm">
+                        <option value="SHA-1" selected>SHA-1 (RFC 6238 Standard)</option>
+                        <option value="SHA-256">SHA-256 (Enhanced Security)</option>
+                        <option value="SHA-512">SHA-512 (Maximum Security)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="clockSkew">Clock Skew Tolerance</label>
+                    <select id="clockSkew">
+                        <option value="1" selected>1 Window (Standard - 30s tolerance)</option>
+                        <option value="0">0 Window (Strict Mode - No tolerance)</option>
+                        <option value="2">2 Windows (Relaxed Mode - 60s tolerance)</option>
+                    </select>
+                </div>
+                <div class="info-box" style="margin: 15px 0; padding: 15px;">
+                    <strong>💡 Clock Skew Tolerance:</strong><br>
+                    • <strong>Strict Mode:</strong> OTP only valid in current window<br>
+                    • <strong>Standard:</strong> OTP valid in current window + 1 previous window<br>
+                    • <strong>Relaxed Mode:</strong> OTP valid in current window + 2 previous windows
+                </div>
+            </div>
+
+            <!-- OTP Display -->
+            <div class="section">
+                <h3>Current TOTP</h3>
+                <button class="btn" onclick="startTOTP()">Start TOTP Generation</button>
+                
+                <div id="otpDisplay" class="otp-display" style="display: none;">
+                    <div class="otp-code" id="otpCode">------</div>
+                    <div class="otp-timer" id="otpTimer">Time remaining: 30 seconds</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Verification Section -->
+            <div class="section">
+                <h3>Verify OTP</h3>
+                <div class="input-group">
+                    <label for="userOTP">Enter OTP for Verification</label>
+                    <input type="text" id="userOTP" placeholder="Enter 6 digit OTP" maxlength="8">
+                </div>
+                <button class="btn" onclick="verifyOTP()">Verify OTP</button>
+                <div id="verificationResult" style="margin-top: 15px;"></div>
+            </div>
+
+            <!-- Security Features -->
+            <div class="info-box">
+                <h4>🛡️ Security Features</h4>
+                <div class="security-features">
+                    <div class="feature-card">
+                        <h5>⏱️ Time-Bound</h5>
+                        <p>OTP valid within limited time window</p>
+                    </div>
+                    <div class="feature-card">
+                        <h5>🔒 HMAC-Based</h5>
+                        <p>Uses Hash-based Message Authentication</p>
+                    </div>
+                    <div class="feature-card">
+                        <h5>🛡️ RFC 6238</h5>
+                        <p>Follows international IETF standard</p>
+                    </div>
+                    <div class="feature-card">
+                        <h5>🔐 Secure Key</h5>
+                        <p>160-bit minimum key length</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="warning">
+                <strong>⚠️ Security Notice:</strong> In production implementation, secret keys must be stored with strong encryption and never transmitted through unsecured channels. Use HSM (Hardware Security Module) for real enterprise applications.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let totpInterval;
+        let currentSecretKey = '';
+
+        // Base32 encoding/decoding
+        const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+        
+        function base32Encode(buffer) {
+            let result = '';
+            let bits = 0;
+            let value = 0;
+            
+            for (let i = 0; i < buffer.length; i++) {
+                value = (value << 8) | buffer[i];
+                bits += 8;
+                
+                while (bits >= 5) {
+                    bits -= 5;
+                    result += base32Chars[(value >>> bits) & 31];
+                }
+            }
+            
+            if (bits > 0) {
+                result += base32Chars[(value << (5 - bits)) & 31];
+            }
+            
+            // Add padding
+            while (result.length % 8 !== 0) {
+                result += '=';
+            }
+            
+            return result;
+        }
+
+        function base32Decode(str) {
+            str = str.toUpperCase().replace(/=+$/, '');
+            let result = new Uint8Array(Math.floor(str.length * 5 / 8));
+            let bits = 0;
+            let value = 0;
+            let index = 0;
+            
+            for (let i = 0; i < str.length; i++) {
+                const char = str[i];
+                const charIndex = base32Chars.indexOf(char);
+                if (charIndex === -1) continue;
+                
+                value = (value << 5) | charIndex;
+                bits += 5;
+                
+                if (bits >= 8) {
+                    bits -= 8;
+                    result[index++] = (value >>> bits) & 255;
+                }
+            }
+            
+            return result.slice(0, index);
+        }
+
+        // HMAC implementation
+        async function hmac(algorithm, key, data) {
+            const cryptoKey = await crypto.subtle.importKey(
+                'raw', key, { name: 'HMAC', hash: algorithm }, false, ['sign']
+            );
+            const signature = await crypto.subtle.sign('HMAC', cryptoKey, data);
+            return new Uint8Array(signature);
+        }
+
+        // Generate secure random key
+        function generateSecretKey() {
+            const length = parseInt(document.getElementById('keyLength').value);
+            const keyBytes = crypto.getRandomValues(new Uint8Array(length / 8));
+            const base32Key = base32Encode(keyBytes);
+            
+            currentSecretKey = base32Key;
+            document.getElementById('secretKey').value = base32Key;
+        }
+
+        // HOTP implementation
+        async function hotp(secret, counter, digits = 6, algorithm = 'SHA-1') {
+            const key = base32Decode(secret);
+            const counterBuffer = new ArrayBuffer(8);
+            const counterView = new DataView(counterBuffer);
+            counterView.setBigUint64(0, BigInt(counter), false);
+            
+            const hmacResult = await hmac(algorithm, key, counterBuffer);
+            
+            // Dynamic truncation (RFC 4226)
+            const offset = hmacResult[hmacResult.length - 1] & 0x0f;
+            const binary = (
+                ((hmacResult[offset] & 0x7f) << 24) |
+                ((hmacResult[offset + 1] & 0xff) << 16) |
+                ((hmacResult[offset + 2] & 0xff) << 8) |
+                (hmacResult[offset + 3] & 0xff)
+            );
+            
+            const otp = binary % Math.pow(10, digits);
+            return otp.toString().padStart(digits, '0');
+        }
+
+        // TOTP implementation
+        async function totp(secret, timeStep = 30, digits = 6, algorithm = 'SHA-1') {
+            const now = Math.floor(Date.now() / 1000);
+            const timeCounter = Math.floor(now / timeStep);
+            return await hotp(secret, timeCounter, digits, algorithm);
+        }
+
+        // Start TOTP generation
+        async function startTOTP() {
+            if (!currentSecretKey) {
+                alert('Please generate a secret key first!');
+                return;
+            }
+
+            document.getElementById('otpDisplay').style.display = 'block';
+            
+            if (totpInterval) {
+                clearInterval(totpInterval);
+            }
+
+            await updateTOTP();
+            totpInterval = setInterval(updateTOTP, 1000);
+        }
+
+        // Update TOTP display
+        async function updateTOTP() {
+            const timeStep = parseInt(document.getElementById('timeStep').value);
+            const digits = parseInt(document.getElementById('digits').value);
+            const algorithm = document.getElementById('algorithm').value;
+
+            const now = Math.floor(Date.now() / 1000);
+            const timeLeft = timeStep - (now % timeStep);
+            const progress = ((timeStep - timeLeft) / timeStep) * 100;
+
+            const otpCode = await totp(currentSecretKey, timeStep, digits, algorithm);
+            
+            document.getElementById('otpCode').textContent = otpCode;
+            document.getElementById('otpTimer').textContent = `Time remaining: ${timeLeft} seconds`;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+        }
+
+        // Verify OTP
+        async function verifyOTP() {
+            const userInput = document.getElementById('userOTP').value.trim();
+            const timeStep = parseInt(document.getElementById('timeStep').value);
+            const digits = parseInt(document.getElementById('digits').value);
+            const algorithm = document.getElementById('algorithm').value;
+            const clockSkew = parseInt(document.getElementById('clockSkew').value);
+
+            if (!currentSecretKey) {
+                document.getElementById('verificationResult').innerHTML = 
+                    '<div class="warning">❌ Please generate a secret key first!</div>';
+                return;
+            }
+
+            if (!userInput) {
+                document.getElementById('verificationResult').innerHTML = 
+                    '<div class="warning">❌ Please enter an OTP for verification!</div>';
+                return;
+            }
+
+            // Generate current TOTP for verification
+            const currentTimeCounter = Math.floor(Date.now() / 1000 / timeStep);
+            const currentOTP = await hotp(currentSecretKey, currentTimeCounter, digits, algorithm);
+            
+            let isValid = false;
+            let validWindow = '';
+            let validOTPs = [`Current: ${currentOTP}`];
+            
+            // Check current window
+            if (userInput === currentOTP) {
+                isValid = true;
+                validWindow = 'Current Window';
+            }
+            
+            // Check previous windows based on clock skew tolerance
+            for (let i = 1; i <= clockSkew && !isValid; i++) {
+                const previousTimeCounter = currentTimeCounter - i;
+                const previousOTP = await hotp(currentSecretKey, previousTimeCounter, digits, algorithm);
+                validOTPs.push(`Previous-${i}: ${previousOTP}`);
+                
+                if (userInput === previousOTP) {
+                    isValid = true;
+                    validWindow = `Previous Window -${i} (Clock Skew Tolerance)`;
+                }
+            }
+            
+            const resultDiv = document.getElementById('verificationResult');
+            if (isValid) {
+                resultDiv.innerHTML = `
+                    <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; padding: 15px; border-radius: 8px; text-align: center;">
+                        <strong>✅ OTP VALID</strong><br>
+                        Window: ${validWindow}<br>
+                        Authentication successful!
+                    </div>`;
+            } else {
+                const modeText = clockSkew === 0 ? 'STRICT MODE' : `TOLERANCE: ±${clockSkew} windows`;
+                resultDiv.innerHTML = `
+                    <div style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: #721c24; padding: 15px; border-radius: 8px;">
+                        <strong>❌ OTP INVALID (${modeText})</strong><br>
+                        <small>Valid OTPs: ${validOTPs.join(', ')}</small><br>
+                        <small>Received: ${userInput}</small>
+                    </div>`;
+            }
+
+            // Clear input
+            document.getElementById('userOTP').value = '';
+        }
+
+        // Initialize with a demo key
+        window.onload = function() {
+            generateSecretKey();
+        };
+
+        // Handle Enter key for OTP verification
+        document.getElementById('userOTP').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                verifyOTP();
+            }
+        });
+    </script>
+</body>
+</html>
