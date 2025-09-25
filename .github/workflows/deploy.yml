@@ -9,10 +9,10 @@ on:
       deploy_environment:
         description: 'Deployment environment'
         required: true
-        default: 'production'
+        default: 'demo'
         type: choice
         options:
-        - production
+        - demo
         - staging
 
 permissions:
@@ -55,16 +55,16 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: context.ref,
-              environment: 'production',
+              environment: 'demo',
               description: `Deploy release ${context.ref.replace('refs/tags/', '')}`,
               required_contexts: [],
               auto_merge: false
             });
             return deployment.data.id;
 
-      - name: Deploy to Cloudflare Pages (Production)
+      - name: Deploy to Cloudflare Pages (Demo)
         run: |
-          echo "Deploying release ${{ github.ref_name }} to production..."
+          echo "Deploying release ${{ github.ref_name }} to demo environment..."
           wrangler pages deploy dist \
             --project-name=totp \
             --branch=master \
@@ -106,11 +106,7 @@ jobs:
           echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "- **Version**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Project**: totp" >> $GITHUB_STEP_SUMMARY
-          echo "- **Environment**: Production" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: Demo" >> $GITHUB_STEP_SUMMARY
           echo "- **Deployed at**: $(date -u)" >> $GITHUB_STEP_SUMMARY
           echo "- **URL**: https://totp.dev.ruriazz.com" >> $GITHUB_STEP_SUMMARY
           echo "- **GitHub Deployments**: [View deployments](https://github.com/${{ github.repository }}/deployments)" >> $GITHUB_STEP_SUMMARY
-          echo "- **Project**: totp" >> $GITHUB_STEP_SUMMARY
-          echo "- **Environment**: Production" >> $GITHUB_STEP_SUMMARY
-          echo "- **Deployed at**: $(date -u)" >> $GITHUB_STEP_SUMMARY
-          echo "- **URL**: https://totp.dev.ruriazz.com" >> $GITHUB_STEP_SUMMARY
